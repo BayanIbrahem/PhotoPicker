@@ -18,9 +18,57 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var internalStoragePhotoAdapter: InternalStoragePhotoAdapter
+    private lateinit var internalStoragePhotos: List<InternalStoragePhoto>
+
+    private val takePicturePreview = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) {
+        bitmap ->
+        if (binding.switchPrivate.isChecked && bitmap != null) { // internal storage:
+            lifecycleScope.launchWhenCreated {
+                withContext(Dispatchers.IO) {
+                    InternalStorageManager.savePhoto(this@MainActivity, UUID.randomUUID().toString(), bitmap = bitmap)
+                }
+            }
+        } else { // external storage
+
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setupPrivatePhotosToRv() // internalStoragePhotos will be loaded here too.
+
+        setViewClickListeners()
+    }
+    private fun setupPrivatePhotosToRv() {
+        internalStoragePhotoAdapter = InternalStoragePhotoAdapter {
+            // onLongClickListener - delete photos...
+                photo ->
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    InternalStorageManager.deletePhoto(this@MainActivity, photo.name)
+                }
+            }
+        }
+        lifecycleScope.launchWhenCreated {
+            internalStoragePhotos = withContext(Dispatchers.IO) {
+                InternalStorageManager.loadPhotos(context = this@MainActivity.applicationContext)
+            }
+            internalStoragePhotoAdapter.photos = internalStoragePhotos
+        }
+
+        binding.rvPrivatePhotos.adapter = internalStoragePhotoAdapter
+        binding.rvPrivatePhotos.layoutManager = GridLayoutManager(this, 3, RecyclerView.VERTICAL, false)
+//        binding.rvPrivatePhotos.layoutManager = StaggeredGridLayoutManager(3, RecyclerView.VERTICAL)
+    }
+    private fun setViewClickListeners() {
+        binding.btnTakePhoto.setOnClickListener {
+            view ->
+            takePicturePreview.launch(null)
+        }
+
     }
 }
