@@ -34,6 +34,7 @@ object InternalStorageManager {
                     else -> Bitmap.CompressFormat.JPEG
                 }
                 if (bitmap.compress(compressFormat, quality, outputStream)) {
+                    Log.d("InternalStorageSave", "successfully saving $fileName")
                     true
                 } else {
                     this.cancel("save failure", IOException("can't save bitmap"))
@@ -47,19 +48,28 @@ object InternalStorageManager {
         context: Context,
     ): List<InternalStoragePhoto> {
         return withContext(Dispatchers.IO) {
-            context.filesDir.listFiles()?.filter { file ->
+            (context.filesDir.listFiles()?.filter { file ->
                 val name = file.name
                 file.isFile &&
                         file.canRead() &&
                         name.endsWith("jpeg")
                             .or(name.endsWith("png"))
                             .or(name.endsWith("jpg"))
-            }?.map {
-                file ->
-                val bytes = file.readBytes()
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                InternalStoragePhoto(name = file.name, bitmap = bitmap)
-            } ?: listOf()
+            }?.map { file ->
+                try {
+                    val bytes = file.readBytes()
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    InternalStoragePhoto(name = file.name, bitmap = bitmap)
+                } catch (e: IOException) {
+                    null
+                }
+            }?.filter{
+                it != null
+            }.also {
+                Log.d("InternalStorageLoad", "successfully loading photos")
+            } ?: listOf<InternalStoragePhoto>().also {
+                Log.e("InternalStorageLoad", "failed loading photos")
+            }) as List<InternalStoragePhoto>
         }
     }
 

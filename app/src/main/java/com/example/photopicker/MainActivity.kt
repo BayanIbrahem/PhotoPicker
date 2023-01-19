@@ -19,7 +19,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var internalStoragePhotoAdapter: InternalStoragePhotoAdapter
-    private lateinit var internalStoragePhotos: List<InternalStoragePhoto>
+    private var internalStoragePhotos: List<InternalStoragePhoto> = listOf()
 
     private val takePicturePreview = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) {
         bitmap ->
@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launchWhenCreated {
                 withContext(Dispatchers.IO) {
                     InternalStorageManager.savePhoto(this@MainActivity, UUID.randomUUID().toString(), bitmap = bitmap)
+                    loadPrivatePhotosFromStorage()
                 }
             }
         } else { // external storage
@@ -43,6 +44,16 @@ class MainActivity : AppCompatActivity() {
 
         setViewClickListeners()
     }
+    private fun loadPrivatePhotosFromStorage() {
+        lifecycleScope.launchWhenCreated {
+            internalStoragePhotos = withContext(Dispatchers.IO) {
+                InternalStorageManager.loadPhotos(context = this@MainActivity.applicationContext)
+            }.also {
+                internalStoragePhotoAdapter.photos = internalStoragePhotos
+                internalStoragePhotoAdapter.notifyDataSetChanged()
+            }
+        }
+    }
     private fun setupPrivatePhotosToRv() {
         internalStoragePhotoAdapter = InternalStoragePhotoAdapter {
             // onLongClickListener - delete photos...
@@ -52,13 +63,9 @@ class MainActivity : AppCompatActivity() {
                     InternalStorageManager.deletePhoto(this@MainActivity, photo.name)
                 }
             }
+            loadPrivatePhotosFromStorage()
         }
-        lifecycleScope.launchWhenCreated {
-            internalStoragePhotos = withContext(Dispatchers.IO) {
-                InternalStorageManager.loadPhotos(context = this@MainActivity.applicationContext)
-            }
-            internalStoragePhotoAdapter.photos = internalStoragePhotos
-        }
+        internalStoragePhotoAdapter.photos = internalStoragePhotos
 
         binding.rvPrivatePhotos.adapter = internalStoragePhotoAdapter
         binding.rvPrivatePhotos.layoutManager = GridLayoutManager(this, 3, RecyclerView.VERTICAL, false)
