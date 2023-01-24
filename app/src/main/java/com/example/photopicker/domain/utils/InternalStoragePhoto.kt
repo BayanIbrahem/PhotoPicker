@@ -1,7 +1,8 @@
-package com.example.photopicker.domain.unit_classes
+package com.example.photopicker.domain.utils
 
 import android.graphics.Bitmap
 
+// TODO: make this photo contains quality and suffix.
 data class InternalStoragePhoto (
     val name: String,
     val bitmap: Bitmap,

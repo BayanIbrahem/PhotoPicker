@@ -3,12 +3,11 @@ package com.example.photopicker.domain.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.text.isDigitsOnly
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photopicker.databinding.ItemPhotoBinding
-import com.example.photopicker.domain.unit_classes.SharedStoragePhoto
+import com.example.photopicker.domain.utils.SharedStoragePhoto
 import com.example.photopicker.domain.adapters.SharedPhotoAdapter.SharedStoragePhotoViewHolder
 
 class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedStoragePhoto) -> Unit) : RecyclerView.Adapter<SharedStoragePhotoViewHolder>() {

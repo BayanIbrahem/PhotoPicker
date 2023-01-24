@@ -1,6 +1,8 @@
 plugins {
 	id 'com.android.application'
 	id 'org.jetbrains.kotlin.android'
+	id 'com.google.dagger.hilt.android'
+	id 'kotlin-kapt'
 }
 
 android {
@@ -33,9 +35,14 @@ android {
 	kotlinOptions {
 		jvmTarget = '1.8'
 	}
+	// Allow references to generated code
+	kapt {
+		correctErrorTypes true
+	}
 }
 
 dependencies {
+	testImplementation 'junit:junit:4.12'
 	def coroutinesVersion = "1.6.1"
 	def coroutinesLifecycleVersion = "2.5.1"
 
@@ -47,7 +54,21 @@ dependencies {
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+	testImplementation "com.google.truth:truth:1.0.1"
+	androidTestImplementation "com.google.truth:truth:1.0.1"
+
+	testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+	androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
 	// Coroutine Lifecycle Scopes:
 	implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$coroutinesLifecycleVersion"
 	implementation "androidx.lifecycle:lifecycle-runtime-ktx:$coroutinesLifecycleVersion"
+
+	// Dagger Hilt:
+	implementation "com.google.dagger:hilt-android:2.44"
+	kapt "com.google.dagger:hilt-compiler:2.44"
+
+//  this line will crash the application on xml
+//	implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
+	kapt "androidx.hilt:hilt-compiler:1.0.0"
+	implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 }

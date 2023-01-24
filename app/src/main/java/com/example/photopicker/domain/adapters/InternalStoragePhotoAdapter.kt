@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photopicker.databinding.ItemPhotoBinding
 import com.example.photopicker.domain.adapters.InternalStoragePhotoAdapter.InternalStoragePhotoViewHolder
-import com.example.photopicker.domain.unit_classes.InternalStoragePhoto
+import com.example.photopicker.domain.utils.InternalStoragePhoto
 
 class InternalStoragePhotoAdapter (val onPhotoLongClickListener: (photo: InternalStoragePhoto) -> Unit) : RecyclerView.Adapter<InternalStoragePhotoViewHolder>() {
 
@@ -55,12 +55,12 @@ class InternalStoragePhotoAdapter (val onPhotoLongClickListener: (photo: Interna
         val photoItem = photos[position]
         holder.binding.apply{
             this.photo.setImageBitmap(photoItem.bitmap)
-            val aspectRatio = photoItem.bitmap.width.toFloat() / photoItem.bitmap.height.toFloat()
-            ConstraintSet().apply {
-                clone(root)
-                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
-                applyTo(root)
-            }
+//            val aspectRatio = photoItem.bitmap.width.toFloat() / photoItem.bitmap.height.toFloat()
+//            ConstraintSet().apply {
+//                clone(root)
+//                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
+//                applyTo(root)
+//            }
             photo.setOnLongClickListener {
                 onPhotoLongClickListener(photoItem)
                 true

@@ -1,4 +1,4 @@
-package com.example.photopicker.domain.unit_classes
+package com.example.photopicker.domain.utils
 
 import android.net.Uri
 

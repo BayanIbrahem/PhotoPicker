@@ -1,33 +1,37 @@
-package com.example.photopicker
+package com.example.photopicker.presentation.activities
 
-import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.photopicker.data.storage.internalStorage.InternalStorageManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.photopicker.databinding.ActivityMainBinding
 import com.example.photopicker.domain.adapters.InternalStoragePhotoAdapter
-import com.example.photopicker.domain.unit_classes.InternalStoragePhoto
+import com.example.photopicker.domain.models.MainActivityViewModel
+import com.example.photopicker.domain.utils.InternalStoragePhoto
+import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var internalStoragePhotoAdapter: InternalStoragePhotoAdapter
     private var internalStoragePhotos: List<InternalStoragePhoto> = listOf()
 
+    private lateinit var viewModel: MainActivityViewModel
     private val takePicturePreview = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) {
         bitmap ->
         if (binding.switchPrivate.isChecked && bitmap != null) { // internal storage:
-            lifecycleScope.launchWhenCreated {
+            lifecycleScope.launchWhenCreated() {
                 withContext(Dispatchers.IO) {
-                    InternalStorageManager.savePhoto(this@MainActivity, UUID.randomUUID().toString(), bitmap = bitmap)
-                    loadPrivatePhotosFromStorage()
+                    viewModel.internalStorageManagerRepo.savePhoto(UUID.randomUUID().toString(), bitmap = bitmap)
+                    viewModel.reloadInternalStoragePhotos()
                 }
             }
         } else { // external storage
@@ -40,42 +44,39 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupPrivatePhotosToRv() // internalStoragePhotos will be loaded here too.
+        setViewModel()
+
+        loadPrivatePhotosToRv()
 
         setViewClickListeners()
     }
-    private fun loadPrivatePhotosFromStorage() {
-        lifecycleScope.launchWhenCreated {
-            internalStoragePhotos = withContext(Dispatchers.IO) {
-                InternalStorageManager.loadPhotos(context = this@MainActivity.applicationContext)
-            }.also {
-                internalStoragePhotoAdapter.photos = internalStoragePhotos
-                internalStoragePhotoAdapter.notifyDataSetChanged()
-            }
+    private fun setViewModel() {
+        viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
+        viewModel.internalStoragePhotos.observe(this) {
+            newPhotos ->
+            internalStoragePhotos = newPhotos
+            internalStoragePhotoAdapter.photos = internalStoragePhotos
+            internalStoragePhotoAdapter.notifyDataSetChanged()
         }
     }
-    private fun setupPrivatePhotosToRv() {
+    private fun loadPrivatePhotosToRv() {
         internalStoragePhotoAdapter = InternalStoragePhotoAdapter {
-            // onLongClickListener - delete photos...
-                photo ->
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    InternalStorageManager.deletePhoto(this@MainActivity, photo.name)
+            photo ->
+            lifecycleScope.launch(Dispatchers.IO) {
+                viewModel.internalStorageManagerRepo.deletePhoto(photo.name)
+                withContext(Dispatchers.Main) {
+                    loadPrivatePhotosToRv()
                 }
             }
-            loadPrivatePhotosFromStorage()
         }
         internalStoragePhotoAdapter.photos = internalStoragePhotos
-
+        viewModel.reloadInternalStoragePhotos()
         binding.rvPrivatePhotos.adapter = internalStoragePhotoAdapter
-        binding.rvPrivatePhotos.layoutManager = GridLayoutManager(this, 3, RecyclerView.VERTICAL, false)
-//        binding.rvPrivatePhotos.layoutManager = StaggeredGridLayoutManager(3, RecyclerView.VERTICAL)
+        binding.rvPrivatePhotos.layoutManager = GridLayoutManager(this, 3)
     }
     private fun setViewClickListeners() {
         binding.btnTakePhoto.setOnClickListener {
-            view ->
             takePicturePreview.launch(null)
         }
-
     }
 }
