@@ -2,6 +2,7 @@ package com.example.photopicker.domain.utils.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -54,12 +55,12 @@ class PrivatePhotoAdapter (val onPhotoLongClickListener: (photo: PrivatePhoto) -
         val photoItem = photos[position]
         holder.binding.apply{
             this.photo.setImageBitmap(photoItem.bitmap)
-//            val aspectRatio = photoItem.bitmap.width.toFloat() / photoItem.bitmap.height.toFloat()
-//            ConstraintSet().apply {
-//                clone(root)
-//                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
-//                applyTo(root)
-//            }
+            val aspectRatio = photoItem.bitmap.width.toFloat() / photoItem.bitmap.height.toFloat()
+            ConstraintSet().apply {
+                clone(root)
+                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
+                applyTo(root)
+            }
             photo.setOnLongClickListener {
                 onPhotoLongClickListener(photoItem)
                 true

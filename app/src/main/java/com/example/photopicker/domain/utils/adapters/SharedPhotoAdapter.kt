@@ -55,12 +55,12 @@ class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedPhoto) -> 
         val photoItem = photos[position]
         holder.binding.apply{
             photo.setImageURI(photoItem.contentUri)
-//            val aspectRatio = photoItem.width.toFloat() / photoItem.height.toFloat()
-//            ConstraintSet().apply {
-//                clone(root)
-//                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
-//                applyTo(root)
-//            }
+            val aspectRatio = photoItem.width.toFloat() / photoItem.height.toFloat()
+            ConstraintSet().apply {
+                clone(root)
+                setDimensionRatio(holder.binding.photo.id ,aspectRatio.toString())
+                applyTo(root)
+            }
             photo.setOnLongClickListener {
                 onPhotoLongClickListener(photoItem)
                 true

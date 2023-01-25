@@ -11,6 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.photopicker.databinding.ActivityMainBinding
 import com.example.photopicker.domain.utils.adapters.PrivatePhotoAdapter
 import com.example.photopicker.domain.models.MainActivityViewModel
@@ -26,6 +28,7 @@ import kotlinx.coroutines.withContext
 const val TAG = "MAIN_ACTIVITY"
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    // TODO: fix photos display size.
     /** binding: */
     private lateinit var binding: ActivityMainBinding
 
@@ -136,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         privatePhotoAdapter.photos = privatePhotos
         viewModel.reloadPrivatePhotos()
         binding.rvPrivatePhotos.adapter = privatePhotoAdapter
-        binding.rvPrivatePhotos.layoutManager = GridLayoutManager(this, 3)
+        binding.rvPrivatePhotos.layoutManager = StaggeredGridLayoutManager(3, RecyclerView.VERTICAL)
     }
     private fun loadSharedPhotosToRv() {
         sharedPhotoAdapter = SharedPhotoAdapter { photo ->
@@ -148,7 +151,7 @@ class MainActivity : AppCompatActivity() {
         sharedPhotoAdapter.photos = sharedPhotos
         viewModel.reloadSharedPhotos()
         binding.rvPublicPhotos.adapter = sharedPhotoAdapter
-        binding.rvPublicPhotos.layoutManager = GridLayoutManager(this, 3)
+        binding.rvPublicPhotos.layoutManager = StaggeredGridLayoutManager(3, RecyclerView.VERTICAL)
     }
 
     private fun checkExternalStoragePermissions() {
