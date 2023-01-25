@@ -21,9 +21,9 @@ import com.example.photopicker.presentation.utils.KToast
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+const val TAG = "MAIN_ACTIVITY"
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     /** binding: */
@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     /** photos list: */
     private var privatePhotos: List<PrivatePhoto> = listOf()
     private var sharedPhotos: List<SharedPhoto> = listOf()
+
 
     /** Activity result launchers: */
     private val takePicturePreview = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) {
@@ -73,6 +74,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private val intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            KToast.show(this, "deleted successfully", Toast.LENGTH_SHORT)
+        } else {
+            KToast.show(this, "failed to delete image, permission denied", Toast.LENGTH_SHORT)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,11 +89,11 @@ class MainActivity : AppCompatActivity() {
 
         setViewModel()
 
-        loadPhotosToRv()
-
         checkExternalStoragePermissions()
 
         grandNeededPermissions()
+
+        loadPhotosToRv()
 
         setViewClickListeners()
     }
@@ -133,7 +141,8 @@ class MainActivity : AppCompatActivity() {
     private fun loadSharedPhotosToRv() {
         sharedPhotoAdapter = SharedPhotoAdapter { photo ->
             lifecycleScope.launchWhenCreated {
-                viewModel.storageManagerRepo.deleteSharedPhoto(photo.name)
+                viewModel.storageManagerRepo.deleteSharedPhoto(photo, launcher = intentSenderLauncher)
+                viewModel.reloadSharedPhotos()
             }
         }
         sharedPhotoAdapter.photos = sharedPhotos

@@ -1,10 +1,14 @@
 package com.example.photopicker.data.storage.shared_storage
 
+import android.app.RecoverableSecurityException
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.provider.MediaStore
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import com.example.photopicker.data.utils.PhotoSuffix
 import com.example.photopicker.data.utils.ifSdk29DoUnless
 import com.example.photopicker.domain.utils.SharedPhoto
@@ -93,7 +97,42 @@ class SharedStorageManager(private val context: Context) {
         return photos.toList()
     }
 
-    suspend fun deletePhoto(fileName: String): Boolean {
+    suspend fun deletePhoto(
+        photo: SharedPhoto,
+        launcher: ActivityResultLauncher<IntentSenderRequest>
+    ): Boolean {
+        delete(photo, launcher)
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
+            delete(photo, launcher)
+        }
+        return false
+    }
+    private suspend fun delete(
+        photo: SharedPhoto,
+        launcher: ActivityResultLauncher<IntentSenderRequest>
+    ): Boolean{
+        try {
+            context.contentResolver.delete(photo.contentUri, null, null)
+        } catch (e: SecurityException) {
+            val intentSender = when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                    MediaStore.createDeleteRequest(context.contentResolver, listOf(photo.contentUri)).intentSender
+                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                    val recoverableSecurityException = e as? RecoverableSecurityException
+                    recoverableSecurityException?.userAction?.actionIntent?.intentSender
+                }
+                else -> null
+            }
+            intentSender?.let {
+                withContext(Dispatchers.Main) {
+                    launcher.launch(
+                        IntentSenderRequest.Builder(it).build()
+                    )
+                    return@withContext true
+                }
+            }
+        }
         return false
     }
 }

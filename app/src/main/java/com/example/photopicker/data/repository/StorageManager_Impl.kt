@@ -1,6 +1,9 @@
 package com.example.photopicker.data.repository
 
 import android.graphics.Bitmap
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.photopicker.data.storage.shared_storage.SharedStorageManager
 import com.example.photopicker.data.storage.private_storage.PrivateStorageManager
 import com.example.photopicker.data.utils.PhotoSuffix
@@ -43,8 +46,11 @@ class StorageManager_Impl @Inject constructor(
         return privateStorage.deletePhoto(fileName)
     }
 
-    override suspend fun deleteSharedPhoto(fileName: String): Boolean {
-        return sharedStorage.deletePhoto(fileName)
+    override suspend fun deleteSharedPhoto(
+        photo: SharedPhoto,
+        launcher: ActivityResultLauncher<IntentSenderRequest>
+    ): Boolean {
+        return sharedStorage.deletePhoto(photo, launcher)
     }
 
 }

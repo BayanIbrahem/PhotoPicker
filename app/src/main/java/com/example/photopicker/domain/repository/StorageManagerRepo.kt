@@ -1,6 +1,8 @@
 package com.example.photopicker.domain.repository
 
 import android.graphics.Bitmap
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import com.example.photopicker.data.utils.PhotoSuffix
 import com.example.photopicker.domain.utils.PrivatePhoto
 import com.example.photopicker.domain.utils.SharedPhoto
@@ -23,5 +25,5 @@ interface StorageManagerRepo {
     suspend fun loadSharedPhotos (): List<SharedPhoto>
 
     suspend fun deletePrivatePhoto (fileName: String): Boolean
-    suspend fun deleteSharedPhoto (fileName: String): Boolean
+    suspend fun deleteSharedPhoto (photo: SharedPhoto, launcher: ActivityResultLauncher<IntentSenderRequest>): Boolean
 }
