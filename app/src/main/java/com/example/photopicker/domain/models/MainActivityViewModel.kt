@@ -1,7 +1,10 @@
 package com.example.photopicker.domain.models
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.photopicker.data.storage.shared_storage.TAG
 import com.example.photopicker.domain.repository.StorageManagerRepo
 import com.example.photopicker.domain.utils.PrivatePhoto
 import com.example.photopicker.domain.utils.SharedPhoto
@@ -27,7 +30,7 @@ class MainActivityViewModel @Inject constructor(
             return
         }
         reloadingPrivatePhotos = true
-        GlobalScope.launch {
+        viewModelScope.launch {
             val photos = withContext(Dispatchers.IO) {
                 storageManagerRepo.loadPrivatePhotos()
             }
@@ -42,8 +45,12 @@ class MainActivityViewModel @Inject constructor(
         if (reloadingSharedPhotos){
             return
         }
+        if (externalStorageReadPermission.not()) {
+            Log.e(TAG, "Couldn't load photos without read permission!")
+            return
+        }
         reloadingSharedPhotos = true
-        GlobalScope.launch {
+        viewModelScope.launch {
             val photos = withContext(Dispatchers.IO) {
                 storageManagerRepo.loadSharedPhotos()
             }

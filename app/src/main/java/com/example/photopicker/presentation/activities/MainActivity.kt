@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadSharedPhotosToRv() {
         sharedPhotoAdapter = SharedPhotoAdapter { photo ->
             lifecycleScope.launchWhenCreated {
-                viewModel.storageManagerRepo.deleteSharedPhoto()
+                viewModel.storageManagerRepo.deleteSharedPhoto(photo.name)
             }
         }
         sharedPhotoAdapter.photos = sharedPhotos

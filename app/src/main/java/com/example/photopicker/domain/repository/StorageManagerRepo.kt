@@ -23,7 +23,5 @@ interface StorageManagerRepo {
     suspend fun loadSharedPhotos (): List<SharedPhoto>
 
     suspend fun deletePrivatePhoto (fileName: String): Boolean
-    suspend fun deleteSharedPhoto (
-
-    ): Boolean
+    suspend fun deleteSharedPhoto (fileName: String): Boolean
 }

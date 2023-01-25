@@ -43,8 +43,8 @@ class StorageManager_Impl @Inject constructor(
         return privateStorage.deletePhoto(fileName)
     }
 
-    override suspend fun deleteSharedPhoto(): Boolean {
-        return true
+    override suspend fun deleteSharedPhoto(fileName: String): Boolean {
+        return sharedStorage.deletePhoto(fileName)
     }
 
 }
