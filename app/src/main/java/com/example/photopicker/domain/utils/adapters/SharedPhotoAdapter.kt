@@ -1,4 +1,4 @@
-package com.example.photopicker.domain.adapters
+package com.example.photopicker.domain.utils.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,29 +7,29 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photopicker.databinding.ItemPhotoBinding
-import com.example.photopicker.domain.utils.SharedStoragePhoto
-import com.example.photopicker.domain.adapters.SharedPhotoAdapter.SharedStoragePhotoViewHolder
+import com.example.photopicker.domain.utils.SharedPhoto
+import com.example.photopicker.domain.utils.adapters.SharedPhotoAdapter.SharedPhotoViewHolder
 
-class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedStoragePhoto) -> Unit) : RecyclerView.Adapter<SharedStoragePhotoViewHolder>() {
+class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedPhoto) -> Unit) : RecyclerView.Adapter<SharedPhotoViewHolder>() {
 
-    inner class SharedStoragePhotoViewHolder(val binding: ItemPhotoBinding): RecyclerView.ViewHolder(binding.root)
+    inner class SharedPhotoViewHolder(val binding: ItemPhotoBinding): RecyclerView.ViewHolder(binding.root)
 
-    private val diffUtil = object: DiffUtil.ItemCallback<SharedStoragePhoto>() {
+    private val diffUtil = object: DiffUtil.ItemCallback<SharedPhoto>() {
         override fun areContentsTheSame(
-            oldItem: SharedStoragePhoto,
-            newItem: SharedStoragePhoto
+            oldItem: SharedPhoto,
+            newItem: SharedPhoto
         ): Boolean {
             return oldItem == newItem
         }
         override fun areItemsTheSame(
-            oldItem: SharedStoragePhoto,
-            newItem: SharedStoragePhoto
+            oldItem: SharedPhoto,
+            newItem: SharedPhoto
         ): Boolean {
             return oldItem.id == newItem.id
         }
     }
-    val differ = AsyncListDiffer<SharedStoragePhoto>(this, diffUtil)
-    var photos: List<SharedStoragePhoto>
+    val differ = AsyncListDiffer<SharedPhoto>(this, diffUtil)
+    var photos: List<SharedPhoto>
         get() = differ.currentList
         set(value) {
             differ.submitList(value)
@@ -42,8 +42,8 @@ class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedStoragePho
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): SharedStoragePhotoViewHolder {
-        return SharedStoragePhotoViewHolder(
+    ): SharedPhotoViewHolder {
+        return SharedPhotoViewHolder(
             ItemPhotoBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
@@ -51,7 +51,7 @@ class SharedPhotoAdapter (val onPhotoLongClickListener: (photo: SharedStoragePho
             )
         )
     }
-    override fun onBindViewHolder(holder: SharedStoragePhotoViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SharedPhotoViewHolder, position: Int) {
         val photoItem = photos[position]
         holder.binding.apply{
             photo.setImageURI(photoItem.contentUri)

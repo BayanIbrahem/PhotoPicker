@@ -2,38 +2,57 @@ package com.example.photopicker.domain.models
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.photopicker.domain.repository.InternalStorageManagerRepo
-import com.example.photopicker.domain.utils.InternalStoragePhoto
+import com.example.photopicker.domain.repository.StorageManagerRepo
+import com.example.photopicker.domain.utils.PrivatePhoto
+import com.example.photopicker.domain.utils.SharedPhoto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    val internalStorageManagerRepo: InternalStorageManagerRepo
+    val storageManagerRepo: StorageManagerRepo
 ): ViewModel () {
-//    @Inject lateinit var internalStorageManagerRepo: InternalStorageManagerRepo
+    var privatePhotos : MutableLiveData<List<PrivatePhoto>> = MutableLiveData()
+    var sharedPhotos : MutableLiveData<List<SharedPhoto>> = MutableLiveData()
 
-    var internalStoragePhotos : MutableLiveData<List<InternalStoragePhoto>> = MutableLiveData()
-    private var reloadingInternalStoragePhotos = false
+    private var reloadingPrivatePhotos = false
+    private var reloadingSharedPhotos = false
 
-    fun getInternalStoragePhotos() : List<InternalStoragePhoto> {
-        return internalStoragePhotos.value ?: listOf()
-    }
-    fun reloadInternalStoragePhotos() {
-        if (reloadingInternalStoragePhotos){
+    var externalStorageReadPermission = false
+    var externalStorageWritePermission = false
+
+    fun reloadPrivatePhotos() {
+        if (reloadingPrivatePhotos){
             return
         }
-        reloadingInternalStoragePhotos = true
+        reloadingPrivatePhotos = true
         GlobalScope.launch {
             val photos = withContext(Dispatchers.IO) {
-                internalStorageManagerRepo.loadPhotos()
+                storageManagerRepo.loadPrivatePhotos()
             }
             withContext(Dispatchers.Main) {
-                internalStoragePhotos.value = photos
+                privatePhotos.value = photos
             }
-            reloadingInternalStoragePhotos = false
+            reloadingPrivatePhotos = false
         }
+    }
+
+    fun reloadSharedPhotos() {
+        if (reloadingSharedPhotos){
+            return
+        }
+        reloadingSharedPhotos = true
+        GlobalScope.launch {
+            val photos = withContext(Dispatchers.IO) {
+                storageManagerRepo.loadSharedPhotos()
+            }
+            withContext(Dispatchers.Main) {
+                sharedPhotos.value = photos
+            }
+            reloadingSharedPhotos = false
+        }
+
     }
 
 }

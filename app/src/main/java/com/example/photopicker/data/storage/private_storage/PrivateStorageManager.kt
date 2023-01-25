@@ -1,20 +1,19 @@
-package com.example.photopicker.data.repository
+package com.example.photopicker.data.storage.private_storage
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.photopicker.data.utils.PhotoSuffix
-import com.example.photopicker.domain.repository.InternalStorageManagerRepo
-import com.example.photopicker.domain.utils.InternalStoragePhoto
+import com.example.photopicker.domain.utils.PrivatePhoto
 import kotlinx.coroutines.*
 import java.io.IOException
 
-const val TAG = "ISM_IMPL"
-class InternalStorageManager_Impl(
+const val TAG = "PRIVATE_STORAGE"
+class PrivateStorageManager (
     private val context: Context,
-): InternalStorageManagerRepo {
-    override suspend fun savePhoto(
+) {
+     suspend fun savePhoto(
         fileName: String,
         suffix: PhotoSuffix,
         bitmap: Bitmap,
@@ -52,7 +51,7 @@ class InternalStorageManager_Impl(
         }
     }
 
-    override suspend fun loadPhotos(): List<InternalStoragePhoto> {
+     suspend fun loadPrivatePhotos(): List<PrivatePhoto> {
         val photos = withContext(Dispatchers.IO) {
             context.filesDir.listFiles()?.filter { file ->
                 val name = file.name
@@ -65,13 +64,13 @@ class InternalStorageManager_Impl(
                 try {
                     val bytes = file.readBytes()
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    InternalStoragePhoto(name = file.name, bitmap = bitmap)
+                    PrivatePhoto(name = file.name, bitmap = bitmap)
                 } catch (e: IOException) {
                     null
                 }
             }.also {
                 Log.d(TAG, "successfully loading photos")
-            } ?: listOf<InternalStoragePhoto>().also {
+            } ?: listOf<PrivatePhoto>().also {
                 Log.e(TAG, "failed loading photos")
             }
         }
@@ -79,7 +78,7 @@ class InternalStorageManager_Impl(
         return photos
     }
 
-    override suspend fun deletePhoto(fileName: String): Boolean {
+     suspend fun deletePhoto(fileName: String): Boolean {
         val handler = CoroutineExceptionHandler {
                 _, trowable ->
             Log.e(TAG, "failed to delete $fileName")
